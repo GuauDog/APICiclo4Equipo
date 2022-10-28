@@ -1,10 +1,12 @@
 import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
+import {configuracion} from '../config/config';
+
 
 const config = {
   name: 'mongo',
   connector: 'mongodb',
-  url: 'mongodb+srv://MisionTicC4:BBcJggI646GDICQw@misionticc4.ldlocny.mongodb.net/test',
+  url: configuracion.cadenaBD,
   host: '',
   port: 0,
   user: '',

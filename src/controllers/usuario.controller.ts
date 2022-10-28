@@ -19,12 +19,17 @@ import {
 } from '@loopback/rest';
 import {Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
-
+import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
+import {AuthService} from "../services";
+import axios from 'axios';
+import {configuracion} from '../config/config';
 export class UsuarioController {
   constructor(
     @repository(UsuarioRepository)
-    public usuarioRepository : UsuarioRepository,
-  ) {}
+    public usuarioRepository: UsuarioRepository,
+    @service(AuthService)
+    public servicioAuth: AuthService
+  ) { }
 
   @post('/usuarios')
   @response(200, {
@@ -44,7 +49,61 @@ export class UsuarioController {
     })
     usuario: Omit<Usuario, 'id'>,
   ): Promise<Usuario> {
-    return this.usuarioRepository.create(usuario);
+    //Creamos la clave antes de guardar el usuario
+    const clave = this.servicioAuth.GenerarClave();
+    const claveCifrada = this.servicioAuth.CifrarClave(clave);
+    usuario.password = claveCifrada;
+
+    // Notificamos al usuario por correo
+    // let destino = usuario.correo;
+    // Notificamos al usuario por telefono y cambiar la url por send_email
+    let destinoEmail = usuario.correo;
+    let destinoSms = usuario.telefono;
+
+    let asunto = 'Registro de usuario en plataforma';
+    let contenido = `Hola, ${usuario.nombre} ${usuario.apellidos} su contraseña en el portal es: ${clave}`
+    axios({
+      method: 'post',
+      url: configuracion.baseURL+'send_sms', //Si quiero enviar por correo cambiar a send_email
+
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      data: {
+        destino: destinoSms,
+        asunto: asunto,
+        contenido: contenido
+      }
+    }).then((data: any) => {
+      console.log(data)
+    }).catch((err: any) => {
+      console.log(err)
+    })
+
+    axios({
+      method: 'post',
+      url:configuracion.baseURL+'send_email', //Si quiero enviar por correo cambiar a send_email
+
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      data: {
+        destino: destinoEmail,
+        asunto: asunto,
+        contenido: contenido
+      }
+    }).then((data: any) => {
+      console.log(data)
+    }).catch((err: any) => {
+      console.log(err)
+    })
+
+    //Guardamos el usuario
+    const p = await this.usuarioRepository.create(usuario);
+
+    return p;
   }
 
   @get('/usuarios/count')
