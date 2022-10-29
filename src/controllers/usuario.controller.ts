@@ -23,6 +23,8 @@ import { /* inject, */ BindingScope, injectable, service} from '@loopback/core';
 import {AuthService} from "../services";
 import axios from 'axios';
 import {configuracion} from '../config/config';
+import {Credenciales} from "../models";
+import {HttpErrors} from '@loopback/rest';
 export class UsuarioController {
   constructor(
     @repository(UsuarioRepository)
@@ -30,6 +32,36 @@ export class UsuarioController {
     @service(AuthService)
     public servicioAuth: AuthService
   ) { }
+
+//Servicio de login
+@post('/usuarios/login', {
+  responses: {
+    '200': {
+      description: 'Identificación de usuarios'
+    }
+  }
+})
+async login(
+  @requestBody() credenciales: Credenciales
+) {
+  let p = await this.servicioAuth.IdentificarPersona(credenciales.usuario, credenciales.password);
+  if (p) {
+    let token = this.servicioAuth.GenerarTokenJWT(p);
+
+    return {
+      status: "success",
+      data: {
+        nombre: p.nombre,
+        apellidos: p.apellidos,
+        correo: p.correo,
+        id: p.id
+      },
+      token: token
+    }
+  } else {
+    throw new HttpErrors[401]("Datos invalidos")
+  }
+}
 
   @post('/usuarios')
   @response(200, {
@@ -64,7 +96,7 @@ export class UsuarioController {
     let contenido = `Hola, ${usuario.nombre} ${usuario.apellidos} su contraseña en el portal es: ${clave}`
     axios({
       method: 'post',
-      url: configuracion.baseURL+'send_sms', //Si quiero enviar por correo cambiar a send_email
+      url: configuracion.baseURL + 'send_sms', //Si quiero enviar por correo cambiar a send_email
 
       headers: {
         'Accept': 'application/json',
@@ -83,7 +115,7 @@ export class UsuarioController {
 
     axios({
       method: 'post',
-      url:configuracion.baseURL+'send_email', //Si quiero enviar por correo cambiar a send_email
+      url: configuracion.baseURL + 'send_email', //Si quiero enviar por correo cambiar a send_email
 
       headers: {
         'Accept': 'application/json',
