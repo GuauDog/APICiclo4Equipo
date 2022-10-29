@@ -25,6 +25,9 @@ import axios from 'axios';
 import {configuracion} from '../config/config';
 import {Credenciales} from "../models";
 import {HttpErrors} from '@loopback/rest';
+import {authenticate} from '@loopback/authentication';
+
+@authenticate("admin")
 export class UsuarioController {
   constructor(
     @repository(UsuarioRepository)
@@ -33,36 +36,37 @@ export class UsuarioController {
     public servicioAuth: AuthService
   ) { }
 
-//Servicio de login
-@post('/usuarios/login', {
-  responses: {
-    '200': {
-      description: 'Identificación de usuarios'
+  @authenticate.skip()
+  //Servicio de login
+  @post('/usuarios/login', {
+    responses: {
+      '200': {
+        description: 'Identificación de usuarios'
+      }
+    }
+  })
+  async login(
+    @requestBody() credenciales: Credenciales
+  ) {
+    let p = await this.servicioAuth.IdentificarPersona(credenciales.usuario, credenciales.password);
+    if (p) {
+      let token = this.servicioAuth.GenerarTokenJWT(p);
+
+      return {
+        status: "success",
+        data: {
+          nombre: p.nombre,
+          apellidos: p.apellidos,
+          correo: p.correo,
+          id: p.id
+        },
+        token: token
+      }
+    } else {
+      throw new HttpErrors[401]("Datos invalidos")
     }
   }
-})
-async login(
-  @requestBody() credenciales: Credenciales
-) {
-  let p = await this.servicioAuth.IdentificarPersona(credenciales.usuario, credenciales.password);
-  if (p) {
-    let token = this.servicioAuth.GenerarTokenJWT(p);
-
-    return {
-      status: "success",
-      data: {
-        nombre: p.nombre,
-        apellidos: p.apellidos,
-        correo: p.correo,
-        id: p.id
-      },
-      token: token
-    }
-  } else {
-    throw new HttpErrors[401]("Datos invalidos")
-  }
-}
-
+  @authenticate.skip()
   @post('/usuarios')
   @response(200, {
     description: 'Usuario model instance',
