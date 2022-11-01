@@ -15,6 +15,18 @@ export class Rutas extends Entity {
   })
   tiempoEstimado: number;
 
+  @property({
+    type: 'string',
+    required: true,
+  })
+  origen: string;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  destino: string;
+
 
   constructor(data?: Partial<Rutas>) {
     super(data);
