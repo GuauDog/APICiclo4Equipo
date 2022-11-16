@@ -19,13 +19,15 @@ import {
 } from '@loopback/rest';
 import {Aeropuerto} from '../models';
 import {AeropuertoRepository} from '../repositories';
+import {authenticate} from '@loopback/authentication';
 
+@authenticate("admin")
 export class AeropuertoController {
   constructor(
     @repository(AeropuertoRepository)
     public aeropuertoRepository : AeropuertoRepository,
   ) {}
-
+  @authenticate.skip()
   @post('/aeropuertos')
   @response(200, {
     description: 'Aeropuerto model instance',
