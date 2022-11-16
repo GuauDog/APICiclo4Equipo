@@ -1,7 +1,7 @@
 import {Entity, model, property} from '@loopback/repository';
 
 @model()
-export class Rutas extends Entity {
+export class Ruta extends Entity {
   @property({
     type: 'string',
     id: true,
@@ -10,10 +10,10 @@ export class Rutas extends Entity {
   id?: string;
 
   @property({
-    type: 'number',
+    type: 'string',
     required: true,
   })
-  tiempoEstimado: number;
+  tiempoEstimado: string;
 
   @property({
     type: 'string',
@@ -28,13 +28,13 @@ export class Rutas extends Entity {
   destino: string;
 
 
-  constructor(data?: Partial<Rutas>) {
+  constructor(data?: Partial<Ruta>) {
     super(data);
   }
 }
 
-export interface RutasRelations {
+export interface RutaRelations {
   // describe navigational properties here
 }
 
-export type RutasWithRelations = Rutas & RutasRelations;
+export type RutaWithRelations = Ruta & RutaRelations;

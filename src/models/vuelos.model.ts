@@ -10,7 +10,7 @@ export class Vuelos extends Entity {
   id?: string;
 
   @property({
-    type: 'date',
+    type: 'string',
     required: true,
   })
   fechaInicio: string;
@@ -22,7 +22,7 @@ export class Vuelos extends Entity {
   horaInicio: string;
 
   @property({
-    type: 'date',
+    type: 'string',
     required: true,
   })
   fechaFin: string;
@@ -34,10 +34,10 @@ export class Vuelos extends Entity {
   horaFin: string;
 
   @property({
-    type: 'number',
+    type: 'string',
     required: true,
   })
-  asientosVendidos: number;
+  asientosVendidos: string;
 
   @property({
     type: 'string',
